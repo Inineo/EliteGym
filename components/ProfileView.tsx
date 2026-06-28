@@ -36,6 +36,9 @@ export default function ProfileView({ user, onUpdateUser, onLogout, setCurrentTa
     phone: user.phone,
     bio: user.bio,
   });
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
 
   // Check-In interaction simulation states
   const [isCheckedIn, setIsCheckedIn] = useState(false);
@@ -46,14 +49,125 @@ export default function ProfileView({ user, onUpdateUser, onLogout, setCurrentTa
     setEditForm(prev => ({ ...prev, [id]: value }));
   };
 
-  const handleSaveEdit = (e: FormEvent) => {
+  const handleImageSelect = (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // Validate file type
+      const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+      if (!validTypes.includes(file.type)) {
+        alert('Please select a valid image file (JPEG, PNG, or WebP)');
+        return;
+      }
+      
+      // Validate file size (max 5MB)
+      const maxSize = 5 * 1024 * 1024;
+      if (file.size > maxSize) {
+        alert('Image size must be less than 5MB');
+        return;
+      }
+
+      setSelectedImage(file);
+      
+      // Create preview
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleUploadImage = async (userId: string) => {
+    if (!selectedImage) return null;
+
+    setIsUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', selectedImage);
+      formData.append('userId', userId);
+
+      const response = await fetch('/api/profile/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Upload failed');
+      }
+
+      return result.avatarUrl;
+    } catch (error) {
+      console.error('Upload error:', error);
+      alert('Failed to upload image: ' + (error instanceof Error ? error.message : 'Unknown error'));
+      return null;
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const handleSaveEdit = async (e: FormEvent) => {
     e.preventDefault();
-    onUpdateUser({
-      name: editForm.name,
-      phone: editForm.phone,
-      bio: editForm.bio,
-    });
-    setIsEditing(false);
+    
+    try {
+      // Get user session
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        alert('You must be logged in to update your profile.');
+        return;
+      }
+
+      // Upload image if selected
+      let newAvatarUrl = user.avatarUrl;
+      if (selectedImage) {
+        const uploadedUrl = await handleUploadImage(session.user.id);
+        if (uploadedUrl) {
+          newAvatarUrl = uploadedUrl;
+        } else {
+          // If upload fails, don't proceed
+          return;
+        }
+      }
+
+      // Update profile data
+      const response = await fetch('/api/profile/update', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId: session.user.id,
+          name: editForm.name,
+          phone: editForm.phone,
+          bio: editForm.bio,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Update failed');
+      }
+
+      // Update local state
+      onUpdateUser({
+        name: editForm.name,
+        phone: editForm.phone,
+        bio: editForm.bio,
+        avatarUrl: newAvatarUrl,
+      });
+
+      // Reset states
+      setIsEditing(false);
+      setSelectedImage(null);
+      setImagePreview(null);
+      
+      alert('Profile updated successfully!');
+    } catch (error) {
+      console.error('Save error:', error);
+      alert('Failed to save profile: ' + (error instanceof Error ? error.message : 'Unknown error'));
+    }
   };
 
   // Perform interactive Check-In simulation
@@ -130,6 +244,46 @@ export default function ProfileView({ user, onUpdateUser, onLogout, setCurrentTa
             </h3>
 
             <form onSubmit={handleSaveEdit} className="space-y-4">
+              {/* Profile Picture Upload Section */}
+              <div className="space-y-3 pb-4 border-b border-[#333333]">
+                <label className="text-xs font-semibold text-[#c6c6c7] uppercase block">
+                  Profile Picture
+                </label>
+                <div className="flex items-center gap-4">
+                  <div className="w-20 h-20 rounded-full overflow-hidden border-2 border-[#333333] relative flex-shrink-0">
+                    <img 
+                      src={imagePreview || user.avatarUrl} 
+                      alt="Profile preview"
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <input 
+                      type="file"
+                      id="avatar-upload"
+                      accept="image/jpeg,image/jpg,image/png,image/webp"
+                      onChange={handleImageSelect}
+                      className="hidden"
+                    />
+                    <label 
+                      htmlFor="avatar-upload"
+                      className="inline-flex items-center gap-2 px-4 py-2 bg-[#131313] border border-[#333333] hover:border-primary-fixed rounded-lg text-xs font-semibold text-white cursor-pointer transition-colors"
+                    >
+                      <User className="w-4 h-4" />
+                      {selectedImage ? 'Change Image' : 'Upload Image'}
+                    </label>
+                    {selectedImage && (
+                      <p className="text-xs text-primary-fixed mt-2">
+                        ✓ {selectedImage.name} selected
+                      </p>
+                    )}
+                    <p className="text-[10px] text-[#c6c6c7] mt-1">
+                      Max 5MB • JPEG, PNG, WebP
+                    </p>
+                  </div>
+                </div>
+              </div>
+
               <div className="space-y-1">
                 <label className="text-xs font-semibold text-[#c6c6c7] uppercase block" htmlFor="edit-name">
                   Name
@@ -188,15 +342,24 @@ export default function ProfileView({ user, onUpdateUser, onLogout, setCurrentTa
                 <button 
                   type="button"
                   onClick={() => setIsEditing(false)}
-                  className="flex-1 border border-[#333333] hover:bg-white/5 py-3 rounded-xl text-sm font-semibold cursor-pointer"
+                  disabled={isUploading}
+                  className="flex-1 border border-[#333333] hover:bg-white/5 py-3 rounded-xl text-sm font-semibold cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Cancel
                 </button>
                 <button 
                   type="submit"
-                  className="flex-1 bg-primary-fixed text-[#161e00] font-sans font-semibold py-3 rounded-xl text-sm font-bold cursor-pointer"
+                  disabled={isUploading}
+                  className="flex-1 bg-primary-fixed text-[#161e00] font-sans font-semibold py-3 rounded-xl text-sm font-bold cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
-                  Save Modifications
+                  {isUploading ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-[#161e00] border-t-transparent rounded-full animate-spin"></div>
+                      <span>Uploading...</span>
+                    </>
+                  ) : (
+                    'Save Modifications'
+                  )}
                 </button>
               </div>
             </form>
