@@ -4,7 +4,7 @@
 @theme {
   --font-sans: "Geist", system-ui, sans-serif;
   --font-headline: "Sora", sans-serif;
-  
+
   --color-primary-fixed: #c3f400;
   --color-background-dark: #131313;
   --color-surface-dark: #1a1a1a;
@@ -60,6 +60,7 @@ body {
     opacity: 0;
     transform: translateY(10px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
