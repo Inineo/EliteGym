@@ -387,12 +387,14 @@ export default function HomeView({ setCurrentTab, isLoggedIn }: HomeViewProps) {
               <div className="absolute inset-0 bg-black/40"></div>
 
               {/* Animated Radar Pulse - Centered */}
-              <div className="absolute top-1/2 left-1/2 -translate-y-1/2 -translate-x-1/2 relative z-10">
-                <span className="absolute flex h-12 w-12 -left-6 -top-6">
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10">
+                {/* Ping animation ring */}
+                <span className="absolute flex h-16 w-16 -left-8 -top-8">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary-fixed opacity-90"></span>
-                  <span className="relative inline-flex rounded-full h-12 w-12 bg-primary-fixed/50"></span>
+                  <span className="relative inline-flex rounded-full h-16 w-16 bg-primary-fixed/40"></span>
                 </span>
-                <span className="absolute top-0 left-0 w-6 h-6 -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary-fixed border-2 border-white shadow-lg" style={{ filter: 'drop-shadow(0 0 12px rgba(195,244,0,0.8))' }}></span>
+                {/* Center dot marker */}
+                <span className="absolute top-0 left-0 w-4 h-4 -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary-fixed border-2 border-white shadow-lg" style={{ filter: 'drop-shadow(0 0 12px rgba(195,244,0,0.8))' }}></span>
               </div>
 
               <div className="absolute bottom-3 right-3 bg-black/80 border border-white/5 rounded px-2.5 py-1 text-[10px] uppercase font-bold tracking-widest text-[#c6c6c7] z-10">
