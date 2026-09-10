@@ -250,7 +250,7 @@ export default function HomeView({ setCurrentTab, isLoggedIn }: HomeViewProps) {
               <img 
                 className="w-full h-[400px] md:h-[480px] object-cover grayscale hover:grayscale-0 hover:scale-105 transition-all duration-700" 
                 alt="Determined female athlete on high-performance dark gym setup" 
-                src="https://lh3.googleusercontent.com/aida-public/AB6AXuBngXoTyu3D7oeKU8bleQK5A3izi-TruMgdG7oe_W_pGhbSNDbofTENY3tQzRsdj86wfrwwok_au-w7eX42T8ow2WNzwiSo2d3SXGQ0d1nIjO2joeL5UmJx2_EvbF-zdRrGs98Fa12KcTch9S9kYcBwj3BGdtMKvIeYR_JxwU2HRmiPnrfYJioQIkJRe-DBRXvqibvQUgm5tY1xt1jWnEKXNv93mmgPJ0B1kByU8yDPfWZOu0gZZYqmbTP_q9ODixVDkDaMvMXfoTUn animate-fade-in"
+                src="https://lh3.googleusercontent.com/aida-public/AB6AXuBngXoTyu3D7oeKU8bleQK5A3izi-TruMgdG7oe_W_pGhbSNDbofTENY3tQzRsdj86wfrwwok_au-w7eX42T8ow2WNzwiSo2d3SXGQ0d1nIjO2joeL5UmJx2_EvbF-zdRrGs98Fa12KcTch9S9kYcBwj3BGdtMKvIeYR_JxwU2HRmiPnrfYJioQIkJRe-DBRXvqibvQUgm5tY1xt1jWnEKXNv93mmgPJ0B1kByU8yDPfWZOu0gZZYqmbTP_q9ODixVDkDaMvMXfoTUn"
               />
               <div className="absolute bottom-4 left-4 right-4 bg-black/60 backdrop-blur-md border border-white/5 rounded-xl p-4">
                 <span className="font-headline text-sm font-semibold block text-white">Biometric telemetry analysis</span>
@@ -352,7 +352,7 @@ export default function HomeView({ setCurrentTab, isLoggedIn }: HomeViewProps) {
                   <MapPin className="text-primary-fixed w-5 h-5 shrink-0 mt-0.5" />
                   <div>
                     <span className="block text-sm font-semibold text-white">Main Headquarters</span>
-                    <span className="block text-xs text-[#c6c6c7] mt-0.5">1212 Performance Plaza, Carbon District, London, UK</span>
+                    <span className="block text-xs text-[#c6c6c7] mt-0.5">Jl. Kaliurang No. 88, Sleman, Yogyakarta 55281, Indonesia</span>
                   </div>
                 </div>
 
@@ -360,7 +360,7 @@ export default function HomeView({ setCurrentTab, isLoggedIn }: HomeViewProps) {
                   <Phone className="text-primary-fixed w-5 h-5 shrink-0 mt-0.5" />
                   <div>
                     <span className="block text-sm font-semibold text-white">Direct Line</span>
-                    <span className="block text-xs text-[#c6c6c7] mt-0.5">+44 20 7946 0123</span>
+                    <span className="block text-xs text-[#c6c6c7] mt-0.5">+62 274 5829 123</span>
                   </div>
                 </div>
 
@@ -374,32 +374,29 @@ export default function HomeView({ setCurrentTab, isLoggedIn }: HomeViewProps) {
               </div>
             </div>
 
-            {/* Futuristic vector map layout */}
-            <div className="h-44 w-full bg-neutral-950/80 border border-white/5 rounded-xl mt-6 relative overflow-hidden flex items-center justify-center">
-              {/* Animated Radar Pulse */}
-              <div className="absolute top-1/2 left-1/3 -translate-y-1/2 -translate-x-1/2 relative">
-                <span className="absolute flex h-6 w-6">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary-fixed opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-6 w-6 bg-primary-fixed/40"></span>
+            {/* Map with location marker */}
+            <div className="h-44 w-full border border-white/5 rounded-xl mt-6 relative overflow-hidden flex items-center justify-center">
+              {/* Background Map Image */}
+              <img 
+                src="/maps/yogya maps.png" 
+                alt="Yogyakarta location map" 
+                className="absolute inset-0 w-full h-full object-cover opacity-80"
+              />
+              
+              {/* Dark overlay for better contrast */}
+              <div className="absolute inset-0 bg-black/40"></div>
+
+              {/* Animated Radar Pulse - Centered */}
+              <div className="absolute top-1/2 left-1/2 -translate-y-1/2 -translate-x-1/2 relative z-10">
+                <span className="absolute flex h-12 w-12 -left-6 -top-6">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary-fixed opacity-90"></span>
+                  <span className="relative inline-flex rounded-full h-12 w-12 bg-primary-fixed/50"></span>
                 </span>
-                <span className="absolute top-1.5 left-1.5 w-3 h-3 rounded-full bg-primary-fixed border border-black shadow-md"></span>
+                <span className="absolute top-0 left-0 w-6 h-6 -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary-fixed border-2 border-white shadow-lg" style={{ filter: 'drop-shadow(0 0 12px rgba(195,244,0,0.8))' }}></span>
               </div>
 
-              {/* Grid outline lines for abstract map */}
-              <div className="absolute inset-0 opacity-15 pointer-events-none select-none">
-                <div className="absolute left-1/10 top-0 bottom-0 w-px bg-white"></div>
-                <div className="absolute left-1/3 top-0 bottom-0 w-px bg-white"></div>
-                <div className="absolute left-2/3 top-0 bottom-0 w-px bg-white"></div>
-                <div className="absolute top-1/4 left-0 right-0 h-px bg-white"></div>
-                <div className="absolute top-12 left-0 right-0 h-px bg-white"></div>
-                <div className="absolute top-3/4 left-0 right-0 h-px bg-white"></div>
-                {/* Diagonal paths */}
-                <div className="absolute w-[140%] h-px bg-primary-fixed top-12 -left-1/4 rotate-12"></div>
-                <div className="absolute w-[140%] h-px bg-white top-24 -left-1/4 -rotate-[22deg]"></div>
-              </div>
-
-              <div className="absolute bottom-3 right-3 bg-black/80 border border-white/5 rounded px-2.5 py-1 text-[10px] uppercase font-bold tracking-widest text-[#c6c6c7]">
-                UK Campus (LIVE)
+              <div className="absolute bottom-3 right-3 bg-black/80 border border-white/5 rounded px-2.5 py-1 text-[10px] uppercase font-bold tracking-widest text-[#c6c6c7] z-10">
+                Yogyakarta Gym (LIVE)
               </div>
             </div>
           </div>
