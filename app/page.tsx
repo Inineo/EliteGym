@@ -143,6 +143,11 @@ export default function Page() {
     };
   }, []);
 
+  // Scroll to top whenever tab changes
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [currentTab]);
+
   // Update profil lokal & Supabase
   const handleUpdateUserFields = async (updatedFields: Partial<UserProfile>) => {
     if (!user) return;
