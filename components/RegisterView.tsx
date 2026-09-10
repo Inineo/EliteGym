@@ -51,9 +51,26 @@ export default function RegisterView({ setCurrentTab }: RegisterViewProps) {
 
     if (error) {
       setErrorMsg(error.message);
-    } else {
-      alert(`Registration authorized! Welcome to Elite Fitness.`);
-      setCurrentTab('profile'); // Instantly redirect
+    } else if (data.user) {
+      // Insert profile data to database
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .insert({
+          id: data.user.id,
+          name: name,
+          email: email,
+          phone: phone || null,
+          avatar_url: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBQt8ldxv-A5SOv2ERhY7nSjDgvxqe48GmFwWYQi7BTTAWzSuGFjT0F5TdTdTfSE5DWSKlbtxx6kQ3rkBfJ4MbCG4ALf10w2nXXwjDPTgFEQUDGPszvA87QxbYPjQ-XR_Wiw8VLhQE9ti-XevJt3NFkWRF3Sy7W7SvCanvU8p7KkkZUirTioKXILa5s16dKpuTL3ufDKNFmS8QhEsFMX5aKemVEQN0tX8tvmkSaGNiWJc2COh2eEcKjTzLkaTz-5AfMAxDVNKFpIMJf',
+          bio: null
+        });
+
+      if (profileError) {
+        console.error('Error creating profile:', profileError);
+        setErrorMsg('Account created but profile setup failed. Please contact support.');
+      } else {
+        alert(`Registration authorized! Welcome to Elite Fitness.`);
+        setCurrentTab('profile'); // Instantly redirect
+      }
     }
   };
 

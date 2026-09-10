@@ -423,10 +423,10 @@ export default function ProfileView({ user, onUpdateUser, onLogout, setCurrentTa
           {/* Section 2: Membership Member Pass (4 Columns) */}
           <section className="md:col-span-4 bento-card rounded-2xl p-6 flex flex-col items-center justify-center text-center" id="member-pass-card">
             <h3 className="font-headline text-lg md:text-xl font-bold text-white mb-4">Member Pass</h3>
-            <div className="bg-white p-2.5 rounded-xl mb-4 glow-lime relative select-none">
+            <div className="bg-white p-3 rounded-xl mb-4 glow-lime relative select-none">
               <img 
-                src={user.avatarUrl.includes('AB6AXuBQt8') ? "https://lh3.googleusercontent.com/aida-public/AB6AXuBd_TKTzOMaTsbT6cBKppxWpj201jaYbTCZzPJ1lbc8q_lQKOfUfUroqF4RJW-S1FOVyPqZxEi2GAIS6Lsgfe-9-x74z54_MnpDkaw1uXHJSOANODGZjydU5NTlc_dsSXEWMT04pjEDDKz8WTh-cCtabn4zBysRdG5JJ_7TVFJk5mJG2LBD-E4KEo9vQwJwvoN5VdLSfi3mqPJm1D7j1tURafmDv2Z6t1afGr2Y7VgKgRuQqLtVk5g1srZN65gPj1OrcAKK9fkSB5wf" : user.avatarUrl} 
-                className="w-44 h-44 object-contain brightness-95" 
+                src="/qr-code.jpg" 
+                className="w-56 h-56 object-contain" 
                 alt="Membership Access Code" 
               />
               <div className="absolute inset-0 bg-primary-fixed/5 pointer-events-none rounded-xl"></div>
