@@ -77,17 +77,19 @@ export default function ProfileView({ user, onUpdateUser, onLogout, setCurrentTa
     }
   };
 
-  const handleUploadImage = async (userId: string) => {
+  const handleUploadImage = async (token: string) => {
     if (!selectedImage) return null;
 
     setIsUploading(true);
     try {
       const formData = new FormData();
       formData.append('file', selectedImage);
-      formData.append('userId', userId);
 
       const response = await fetch('/api/profile/upload', {
         method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`
+        },
         body: formData,
       });
 
@@ -121,7 +123,7 @@ export default function ProfileView({ user, onUpdateUser, onLogout, setCurrentTa
       // Upload image if selected
       let newAvatarUrl = user.avatarUrl;
       if (selectedImage) {
-        const uploadedUrl = await handleUploadImage(session.user.id);
+        const uploadedUrl = await handleUploadImage(session.access_token);
         if (uploadedUrl) {
           newAvatarUrl = uploadedUrl;
         } else {
@@ -135,9 +137,9 @@ export default function ProfileView({ user, onUpdateUser, onLogout, setCurrentTa
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          Authorization: `Bearer ${session.access_token}`
         },
         body: JSON.stringify({
-          userId: session.user.id,
           name: editForm.name,
           phone: editForm.phone,
           bio: editForm.bio,

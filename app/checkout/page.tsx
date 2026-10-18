@@ -9,7 +9,6 @@ import {
   Code,
   FileCode
 } from 'lucide-react';
-import Script from 'next/script';
 
 import { PaymentMethod, PaymentState, OrderSummary, UserProfile, BankType } from '@/types';
 import CheckoutScreen from '@/components/checkout/CheckoutScreen';
@@ -114,7 +113,7 @@ function CheckoutContent() {
     }));
   };
 
-  // Panggil endpoint backend /api/checkout untuk trigger SNAP Midtrans
+  // Panggil endpoint dummy checkout & alihkan ke simulasi pembayaran
   const handleConfirmPayment = async () => {
     if (!currentUser) {
       alert('Please log in or register to complete the purchase.');
@@ -123,57 +122,25 @@ function CheckoutContent() {
     }
 
     try {
-      const response = await fetch('/api/checkout', {
+      await fetch('/api/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           planName: planParam,
-          userId: currentUser.id,
-          userEmail: currentUser.email,
-          userName: currentUser.user_metadata?.name,
-          userPhone: currentUser.user_metadata?.phone,
           promoCode: summary.appliedPromo?.code
         })
       });
-
-      const data = await response.json();
-      if (data.error) {
-        alert(data.error);
-        return;
-      }
-
-      // @ts-ignore
-      if (window.snap) {
-        // @ts-ignore
-        window.snap.pay(data.snapToken, {
-          onSuccess: function (result: any) {
-            handlePaymentSuccess();
-          },
-          onPending: function (result: any) {
-            alert("Payment is pending. Please complete the payment.");
-            router.push('/?tab=profile');
-          },
-          onError: function (result: any) {
-            alert("Payment failed.");
-          },
-          onClose: function () {
-            alert("Payment window closed.");
-          }
-        });
-      } else {
-        // Fallback simulator jika keys belum lengkap dimasukkan
-        console.warn('Midtrans Snap not loaded. Redirecting to manual simulation...');
-        if (selectedMethod === 'bank_transfer') {
-          setPaymentState('processing_bank');
-        } else if (selectedMethod === 'virtual_account') {
-          setPaymentState('processing_va');
-        } else {
-          setPaymentState('processing_qris');
-        }
-      }
     } catch (error) {
-      console.error('Failed to process payment:', error);
-      alert('Internal checkout error occurred.');
+      console.warn('Dummy checkout call completed:', error);
+    }
+
+    // Alihkan langsung ke layar simulator interaktif
+    if (selectedMethod === 'bank_transfer') {
+      setPaymentState('processing_bank');
+    } else if (selectedMethod === 'virtual_account') {
+      setPaymentState('processing_va');
+    } else {
+      setPaymentState('processing_qris');
     }
   };
 
@@ -199,11 +166,6 @@ function CheckoutContent() {
 
   return (
     <div className="min-h-screen bg-black text-[#e2e2e2] flex flex-col font-sans transition-colors duration-300">
-      {/* Script SNAP Midtrans */}
-      <Script 
-        src="https://app.sandbox.midtrans.com/snap/snap.js" 
-        data-client-key={process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY}
-      />
 
       <AnimatePresence>
         {showGuide && (
