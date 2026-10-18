@@ -18,6 +18,7 @@ interface CheckoutScreenProps {
   onChangeBank: (bank: string) => void;
   onApplyPromo: (code: string) => void;
   onConfirmPayment: () => void;
+  isSubmitting?: boolean;
 }
 
 export default function CheckoutScreen({
@@ -27,7 +28,8 @@ export default function CheckoutScreen({
   selectedBank,
   onChangeBank,
   onApplyPromo,
-  onConfirmPayment
+  onConfirmPayment,
+  isSubmitting = false
 }: CheckoutScreenProps) {
   const [promoInput, setPromoInput] = useState('');
   const [promoError, setPromoError] = useState('');
@@ -402,12 +404,17 @@ export default function CheckoutScreen({
         {/* Action Button */}
         <motion.button
           onClick={onConfirmPayment}
-          whileHover={{ scale: 1.01 }}
-          whileTap={{ scale: 0.99 }}
-          className="w-full bg-primary-fixed text-[#131313] font-heading text-base py-4 rounded-2xl font-extrabold shadow-[0_0_35px_rgba(195,244,0,0.15)] hover:shadow-[0_0_50px_rgba(195,244,0,0.3)] transition-all flex items-center justify-center gap-2 cursor-pointer mt-2"
+          disabled={isSubmitting}
+          whileHover={!isSubmitting ? { scale: 1.01 } : {}}
+          whileTap={!isSubmitting ? { scale: 0.99 } : {}}
+          className={`w-full font-heading text-base py-4 rounded-2xl font-extrabold transition-all flex items-center justify-center gap-2 mt-2 ${
+            isSubmitting
+              ? 'bg-slate-800 text-slate-500 cursor-not-allowed border border-white/5'
+              : 'bg-primary-fixed text-[#131313] shadow-[0_0_35px_rgba(195,244,0,0.15)] hover:shadow-[0_0_50px_rgba(195,244,0,0.3)] cursor-pointer'
+          }`}
         >
-          Konfirmasi Pembayaran
-          <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
+          {isSubmitting ? 'Memproses Order...' : 'Konfirmasi Pembayaran'}
+          {!isSubmitting && <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />}
         </motion.button>
 
         <p className="text-center text-[10px] text-slate-500 px-4 leading-normal">

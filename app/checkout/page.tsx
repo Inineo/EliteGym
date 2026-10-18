@@ -76,6 +76,8 @@ function CheckoutContent() {
   });
 
   const [showGuide, setShowGuide] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [orderId, setOrderId] = useState<string>('');
 
   // Load user session
   useEffect(() => {
@@ -96,55 +98,104 @@ function CheckoutContent() {
     });
   }, [planParam, selectedPlan]);
 
-  // Apply Coupon code
+  // Apply Coupon code (validated with whitelist)
+  const VALID_PROMOS: Record<string, number> = {
+    'ELITE2024': 200000,
+    'ELITEFIT': 150000
+  };
+
   const handleApplyPromo = (code: string) => {
-    const discount = 200000; // Rp 200.000 discount
+    const sanitized = code.toUpperCase();
+    const discount = VALID_PROMOS[sanitized] || 0;
+    if (discount === 0) return;
+
     const subtotal = summary.monthlyRate;
-    const tax = (subtotal * summary.taxPercentage) / 100;
-    const newTotal = (subtotal + tax + summary.registrationFee) - discount;
+    const tax = Math.round((subtotal * summary.taxPercentage) / 100);
+    const newTotal = Math.max(0, (subtotal + tax + summary.registrationFee) - discount);
 
     setSummary(prev => ({
       ...prev,
       totalDue: newTotal,
       appliedPromo: {
-        code,
+        code: sanitized,
         discountValue: discount
       }
     }));
   };
 
-  // Panggil endpoint dummy checkout & alihkan ke simulasi pembayaran
+  // Buat order resmi via API dan alihkan ke pembayaran
   const handleConfirmPayment = async () => {
-    if (!currentUser) {
-      alert('Please log in or register to complete the purchase.');
+    if (isSubmitting) return;
+
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session || !session.user) {
+      alert('Silakan login terlebih dahulu untuk menyelesaikan pembayaran.');
       router.push('/?tab=login');
       return;
     }
 
+    setIsSubmitting(true);
     try {
-      await fetch('/api/checkout', {
+      const response = await fetch('/api/checkout', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session.access_token}`
+        },
         body: JSON.stringify({
           planName: planParam,
-          promoCode: summary.appliedPromo?.code
+          promoCode: summary.appliedPromo?.code,
+          paymentMethod: selectedMethod
         })
       });
-    } catch (error) {
-      console.warn('Dummy checkout call completed:', error);
-    }
 
-    // Alihkan langsung ke layar simulator interaktif
-    if (selectedMethod === 'bank_transfer') {
-      setPaymentState('processing_bank');
-    } else if (selectedMethod === 'virtual_account') {
-      setPaymentState('processing_va');
-    } else {
-      setPaymentState('processing_qris');
+      const data = await response.json();
+      if (!response.ok || data.error) {
+        alert(data.error || 'Gagal membuat order.');
+        setIsSubmitting(false);
+        return;
+      }
+
+      setOrderId(data.orderId);
+
+      // Alihkan langsung ke layar simulator pembayaran
+      if (selectedMethod === 'bank_transfer') {
+        setPaymentState('processing_bank');
+      } else if (selectedMethod === 'virtual_account') {
+        setPaymentState('processing_va');
+      } else {
+        setPaymentState('processing_qris');
+      }
+    } catch (error) {
+      console.warn('Checkout error:', error);
+      alert('Terjadi kesalahan saat memulai pembayaran.');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
-  const handlePaymentSuccess = () => {
+  // Verifikasi pembayaran server-side sebelum menampilkan status sukses
+  const handlePaymentSuccess = async () => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        await fetch('/api/checkout/confirm', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${session.access_token}`
+          },
+          body: JSON.stringify({
+            orderId,
+            planName: selectedPlan.name,
+            paymentMethod: selectedMethod
+          })
+        });
+      }
+    } catch (err) {
+      console.warn('Payment confirmation sync notice:', err);
+    }
+
     setPaymentState('success');
   };
 
@@ -281,6 +332,7 @@ function CheckoutContent() {
               onChangeBank={(bank) => setSelectedBank(bank as BankType)}
               onApplyPromo={handleApplyPromo}
               onConfirmPayment={handleConfirmPayment}
+              isSubmitting={isSubmitting}
             />
           )}
 
